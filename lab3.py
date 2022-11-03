@@ -1,6 +1,6 @@
 from lab2 import ColorModel, BaseImage
 import numpy as np
-from lab4 import ImageComparison
+from lab4 import ImageComparison, Histogram
 
 
 class GreyScaleTransform(BaseImage):
