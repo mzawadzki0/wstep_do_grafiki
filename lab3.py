@@ -20,8 +20,21 @@ class GreyScaleTransform(BaseImage):
                 pixel[0] = pixel[1] = pixel[2] = (r + g + b) / 3
         return result
 
-    def to_sepia(self, alpha_beta: tuple = (None, None), w: int = None) -> BaseImage:
-        pass
+    def to_sepia(self, w: int = None, alpha_beta: tuple = (None, None)) -> BaseImage:
+        result = self.to_gray()
+        if w is not None:
+            if 20 <= w <= 40:
+                for l0 in np.nditer(result.data[:, :, 0], op_flags=['readwrite']):
+                    l0[...] = 255 if l0 + w * 2 > 255 else l0 + w * 2
+                for l1 in np.nditer(result.data[:, :, 1], op_flags=['readwrite']):
+                    l1[...] = 255 if l1 + w > 255 else l1 + w
+        else:
+            if alpha_beta[0] > 1 and alpha_beta[1] < 1:
+                for l0 in np.nditer(result.data[:, :, 0], op_flags=['readwrite']):
+                    l0[...] = 255 if l0 * alpha_beta[0] > 255 else l0 * alpha_beta[0]
+                for l2 in np.nditer(result.data[:, :, 2], op_flags=['readwrite']):
+                    l2[...] = 255 if l2 * alpha_beta[1] > 255 else l2 * alpha_beta[1]
+        return result
 
 
 class Image(GreyScaleTransform, BaseImage, enumerate):
