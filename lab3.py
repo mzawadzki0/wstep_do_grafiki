@@ -1,4 +1,6 @@
-from lab2 import ColorModel, BaseImage, np
+from lab2 import ColorModel, BaseImage
+import numpy as np
+from lab4 import ImageComparison
 
 
 class GreyScaleTransform(BaseImage):
@@ -37,6 +39,6 @@ class GreyScaleTransform(BaseImage):
         return result
 
 
-class Image(GreyScaleTransform, BaseImage, enumerate):
+class Image(GreyScaleTransform, ImageComparison):
     def __init__(self, path: str) -> None:
         super().__init__(path)
