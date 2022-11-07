@@ -1,6 +1,6 @@
 from lab2 import ColorModel, BaseImage
+from lab4 import ImageComparison
 import numpy as np
-from lab4 import ImageComparison, Histogram
 
 
 class GreyScaleTransform(BaseImage):
@@ -11,19 +11,19 @@ class GreyScaleTransform(BaseImage):
         shape = self.data.shape
         shape_l = (shape[0] * shape[1], shape[2])
         result = BaseImage.__new__(BaseImage)
-        result.data = np.ndarray(shape, dtype='uint8')
-        result.color_model = ColorModel.rgb
-        view = result.data.view().reshape(shape_l)
+        result.data = np.ndarray(shape[0:2], dtype='uint8')
+        result.color_model = ColorModel.gray
+        view = result.data.view().reshape(shape_l[0], 1)
         if high_contrast:
             for i, ((r, g, b), pixel) in enumerate(zip(self.to_rgb().data.reshape(shape_l), view)):
-                pixel[0] = pixel[1] = pixel[2] = 0.299 * r + 0.587 * g + 0.114 * b
+                pixel[...] = 0.299 * r + 0.587 * g + 0.114 * b
         else:
             for i, ((r, g, b), pixel) in enumerate(zip(self.to_rgb().data.reshape(shape_l), view)):
-                pixel[0] = pixel[1] = pixel[2] = (r + g + b) / 3
+                pixel[...] = (r + g + b) / 3
         return result
 
     def to_sepia(self, w: int = None, alpha_beta: tuple = (None, None)) -> BaseImage:
-        result = self.to_gray()
+        result = self.to_gray().to_rgb()
         if w is not None:
             if 20 <= w <= 40:
                 for l0 in np.nditer(result.data[:, :, 0], op_flags=['readwrite']):

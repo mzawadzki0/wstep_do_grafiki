@@ -101,7 +101,7 @@ class BaseImage:
     def to_rgb(self) -> 'BaseImage':
         if self.color_model is ColorModel.rgb:
             return self
-        shape = self.data.shape
+        shape = (self.data.shape[0], self.data.shape[1], 3)
         shape_l = (shape[0] * shape[1], shape[2])
         result = BaseImage.__new__(BaseImage)
         result.data = np.ndarray(shape, dtype='uint8')
@@ -194,5 +194,7 @@ class BaseImage:
                         rgb[0] = 255 * d + m
                         rgb[1] = m
                         rgb[2] = 255 * z + m
+            case ColorModel.gray:
+                result.data[:, :, 0] = result.data[:, :, 1] = result.data[:, :, 2] = self.data
 
         return result
