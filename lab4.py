@@ -2,6 +2,7 @@ from lab2 import BaseImage
 from enum import Enum
 import numpy as np
 import matplotlib.pyplot as plt
+from math import sqrt
 
 
 class Histogram:
@@ -38,4 +39,16 @@ class ImageComparison(BaseImage):
         return Histogram(n_colors)
 
     def compare_to(self, other: BaseImage, method: ImageDiffMethod) -> float:
-        pass
+        # self.to_gray().to_rgb().histogram()
+        h_this = ...
+        # self.to_gray().to_rgb().histogram()
+        h_other = ...
+        result: float
+        for v_this, v_other in zip(h_this, h_other):
+            result += (v_this - v_other) ** 2
+        result /= 256
+        match method:
+            case ImageDiffMethod.mse:
+                return result
+            case ImageDiffMethod.rmse:
+                return sqrt(result)
