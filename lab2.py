@@ -24,8 +24,17 @@ class BaseImage:
     def save_img(self, path: str) -> None:
         imsave(path, self.data)
 
-    def show_img(self) -> None:
-        plt.imshow(self.data)
+    def show_img(self, show_layers: bool = False) -> None:
+        if self.color_model is ColorModel.gray:
+            plt.imshow(self.data, cmap='gray')
+        else:
+            if show_layers:
+                f, ax_arr = plt.subplots(1, 3)
+                ax_arr[0].imshow(self.data[:, :, 0], cmap='gray')
+                ax_arr[1].imshow(self.data[:, :, 1], cmap='gray')
+                ax_arr[2].imshow(self.data[:, :, 2], cmap='gray')
+            else:
+                plt.imshow(self.data)
         plt.show()
 
     def get_layer(self, layer_id: int) -> 'BaseImage':
@@ -49,7 +58,7 @@ class BaseImage:
         for i, ((r, g, b), hsv) in enumerate(zip(self.data.astype('float').reshape(shape_l), hsv)):
             mm = max(r, g, b)
             m = min(r, g, b)
-            k = (r - (g / 2) - (b / 2)) / sqrt(r ** 2 + g ** 2 + b ** 2 - r * g - r * b - g * b)
+            k: float = (r - (g / 2) - (b / 2)) / sqrt(r ** 2 + g ** 2 + b ** 2 - r * g - r * b - g * b)
             if g >= b:
                 hsv[0] = degrees(acos(k))
             else:
@@ -93,7 +102,7 @@ class BaseImage:
             else:
                 hsl[0] = 360 - degrees(acos(k))
             d = (mm - m) / 255
-            l = (0.5 * (mm + m)) / 255
+            l = ((mm + m) / 2) / 255
             hsl[1] = d / (1 - abs(2 * l - 1)) if l > 0 else 0
             hsl[2] = l
         return result
