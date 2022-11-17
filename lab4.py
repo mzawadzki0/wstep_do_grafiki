@@ -6,7 +6,7 @@ from math import sqrt
 
 
 class Histogram:
-    values: np.ndarray
+    values: np.ndarray((256,), dtype='uint32')
 
     def __init__(self, values: np.histogram, is_grayscale: bool = False) -> None:
         self.values = values
@@ -33,7 +33,7 @@ class ImageDiffMethod(Enum):
 
 
 class ImageComparison(BaseImage):
-    def __init__(self, path) -> None:
+    def __init__(self, path: str) -> None:
         super().__init__(path)
 
     def histogram(self) -> Histogram:
