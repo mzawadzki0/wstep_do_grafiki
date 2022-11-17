@@ -1,5 +1,5 @@
 from lab3 import Image
-from lab4 import ImageDiffMethod as DM
+from lab4 import ImageDiffMethod as Dm
 
 
 # test histogram & plot
@@ -26,4 +26,4 @@ img3: Image = Image("Screenshot.jpg")
 gray = img3.to_gray()
 img3.data, img3.color_model = gray.data, gray.color_model
 print(img3.compare_to(img))
-print(img3.compare_to(img, method=DM.rmse))
+print(img3.compare_to(img, method=Dm.rmse))
