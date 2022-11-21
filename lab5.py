@@ -335,7 +335,8 @@ class ImageAligning(BaseImage):
         else:
             m = min(self.data[:, :].ravel())
             mm = max(self.data[:, :].ravel())
-        print('min = ' + str(m) + '; max = ' + str(mm))
+        # debug
+        # print('min = ' + str(m) + '; max = ' + str(mm))
         result.data = self.data - m * 255 / (mm - m)
         return result
 
