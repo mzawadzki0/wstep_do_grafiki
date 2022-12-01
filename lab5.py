@@ -254,10 +254,10 @@ class Histogram:
 
     def plot(self) -> None:
         if len(self.values.shape) == 1:
-            plt.figure(figsize=(3, 3))
+            plt.figure(figsize=(4, 4))
             plt.plot(self.values, 'gray')
         else:
-            plt.figure(figsize=(10, 3))
+            plt.figure(figsize=(12, 4))
             s1 = plt.subplot(1, 3, 1)
             plt.plot(self.values[0], 'r')
             plt.subplot(1, 3, 2, sharey=s1)
@@ -327,17 +327,20 @@ class ImageAligning(BaseImage):
             hist = hist.to_cumulated()
             diff = hist.values[-1] - hist.values[0]
             for i, value in enumerate(hist.values):
-                if value <= diff * 0.05:
+                if value >= diff * 0.05:
                     m = i
-                if value >= diff * 0.95:
+                    break
+            for i in range(255, 0, -1):
+                if hist.values[i] <= diff * 0.95:
                     mm = i
                     break
         else:
             m = min(self.data[:, :].ravel())
             mm = max(self.data[:, :].ravel())
-        # debug
-        # print('min = ' + str(m) + '; max = ' + str(mm))
-        result.data = self.data - m * 255 / (mm - m)
+        if mm == m:
+            result.data = self.data
+        else:
+            result.data = (self.data.astype(float) - m) * 255 // (mm - m)
         return result
 
 
