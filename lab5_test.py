@@ -9,13 +9,9 @@ print(lena.data)
 
 # lena to cumulated histogram
 lena.histogram().plot()
-lena.histogram().to_cumulated().plot()
+print( lena.histogram().to_cumulated().values)
 
 # lena aligned
 lena.data = lena.align_image().data
-print(lena.data)
-for i in lena.data.ravel():
-    if i < 0 or i > 255:
-        print(i)
 lena.histogram().plot()
 lena.show_img()
