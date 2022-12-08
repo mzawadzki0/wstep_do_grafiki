@@ -5,6 +5,15 @@ from enum import Enum
 from math import acos, sqrt, degrees, cos
 
 
+# zwraca wartość 0-255, jeśli wychodzi ona spoza zakresu
+def cap(value):
+    if value < 0:
+        return 0
+    elif value > 255:
+        return 255
+    else:
+        return value
+
 class ColorModel(Enum):
     rgb = 0
     hsv = 1
@@ -233,15 +242,15 @@ class GreyScaleTransform(BaseImage):
         if w is not None:
             if 20 <= w <= 40:
                 for l0 in np.nditer(result.data[:, :, 0], op_flags=['readwrite']):
-                    l0[...] = 255 if l0 + w * 2 > 255 else l0 + w * 2
+                    l0[...] = cap(l0 + w * 2)
                 for l1 in np.nditer(result.data[:, :, 1], op_flags=['readwrite']):
-                    l1[...] = 255 if l1 + w > 255 else l1 + w
+                    l1[...] = cap(l1 + w)
         else:
             if alpha_beta[0] > 1 and alpha_beta[1] < 1:
                 for l0 in np.nditer(result.data[:, :, 0], op_flags=['readwrite']):
-                    l0[...] = 255 if l0 * alpha_beta[0] > 255 else l0 * alpha_beta[0]
+                    l0[...] = cap(l0 * alpha_beta[0])
                 for l2 in np.nditer(result.data[:, :, 2], op_flags=['readwrite']):
-                    l2[...] = 255 if l2 * alpha_beta[1] > 255 else l2 * alpha_beta[1]
+                    l2[...] = cap(l2 * alpha_beta[1])
         return result
 
 
@@ -326,11 +335,11 @@ class ImageAligning(BaseImage):
             hist = self.histogram()
             hist = hist.to_cumulated()
             diff = hist.values[-1] - hist.values[0]
-            for i, value in enumerate(hist.values):
-                if value >= diff * 0.05:
+            for i in range(256):
+                if hist.values[i] >= diff * 0.05:
                     m = i
                     break
-            for i in range(255, 0, -1):
+            for i in range(255, -1, -1):
                 if hist.values[i] <= diff * 0.95:
                     mm = i
                     break
@@ -340,10 +349,41 @@ class ImageAligning(BaseImage):
         if mm == m:
             result.data = self.data
         else:
-            result.data = (self.data.astype(float) - m) * 255 // (mm - m)
+            result.data = (self.data.astype(float) - m) * 255 / (mm - m)
         return result
 
 
-class Image(GreyScaleTransform, ImageComparison, ImageAligning):
+class ImageFiltration:
+    @staticmethod
+    def conv_2d(image: BaseImage, kernel: np.ndarray, prefix: float = 1) -> BaseImage:
+        # kernel_x // 2 do offsetu
+        kernel_x = kernel.shape[0]
+        kernel_y = kernel.shape[1]
+        kernel = kernel * prefix
+        result = BaseImage.__new__(BaseImage)
+        result.data = np.ndarray(image.data.shape, float) # dtype='uint8' ???
+        result.color_model = image.color_model
+        if image.color_model is ColorModel.gray:
+            # aby przefiltrować również piksele graniczne, obraz źródłowy jest powiększany z każdej strony o offset
+            temp = np.pad(image.data, (kernel_x // 2, kernel_y // 2))
+            for i in range(result.data.shape[0]):
+                for j in range(result.data.shape[1]):
+                    filtered = sum((kernel * temp[i:i + kernel_x, j:j + kernel_y]).ravel())
+                    # dla pełnego zakresu wartości, zamiast cap() należałoby użyć (filtered + offset) * scale ?
+                    result.data[i][j] = cap(filtered)
+        elif image.color_model is ColorModel.rgb:
+            for layer in range(3):
+                temp = np.pad(image.data[:, :, layer], (kernel_x // 2, kernel_y // 2))
+                for i in range(result.data[:, :, layer].shape[0]):
+                    for j in range(result.data[:, :, layer].shape[1]):
+                        filtered = sum((kernel * temp[i:i + kernel_x, j:j + kernel_y]).ravel())
+                        result.data[i, j, layer] = cap(filtered)
+        else:
+            return image
+        result.data = result.data.astype('uint8')
+        return result
+
+
+class Image(GreyScaleTransform, ImageComparison, ImageAligning, ImageFiltration):
     def __init__(self, path: str) -> None:
         super().__init__(path)
