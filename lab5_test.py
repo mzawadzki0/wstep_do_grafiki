@@ -9,7 +9,8 @@ print(lena.data)
 
 # lena to cumulated histogram
 lena.histogram().plot()
-print( lena.histogram().to_cumulated().values)
+lena.histogram.to_cumulated().plot()
+# print( lena.histogram().to_cumulated().values)
 
 # lena aligned
 lena.data = lena.align_image().data
