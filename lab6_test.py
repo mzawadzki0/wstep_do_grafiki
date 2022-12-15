@@ -26,7 +26,14 @@ edges_0 = np.array(
      [-1, 0, 1]]
 )
 
+outline = np.array(
+    [[-1, -1, -1],
+     [-1, 8, -1],
+     [-1, -1, -1]]
+)
+
 Image.conv_2d(lena, blur, 0.04).show_img()
 Image.conv_2d(lena, gaussian_blur, 1/2**8).show_img()
 Image.conv_2d(lena, sharpen).show_img()
-Image.conv_2d(lena, edges_0).show_img() # ok
+Image.conv_2d(lena, edges_0).show_img()
+Image.conv_2d(lena, outline).show_img()
