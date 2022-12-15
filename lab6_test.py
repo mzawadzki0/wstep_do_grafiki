@@ -35,5 +35,5 @@ outline = np.array(
 Image.conv_2d(lena, blur, 0.04).show_img()
 Image.conv_2d(lena, gaussian_blur, 1/2**8).show_img()
 Image.conv_2d(lena, sharpen).show_img()
-Image.conv_2d(lena, edges_0).show_img()
-Image.conv_2d(lena, outline).show_img()
+Image.conv_2d(gray, edges_0).show_img()
+Image.conv_2d(gray, outline).show_img()
