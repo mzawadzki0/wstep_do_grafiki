@@ -122,7 +122,7 @@ class BaseImage:
         shape = (self.data.shape[0], self.data.shape[1], 3)
         shape_l = (shape[0] * shape[1], shape[2])
         result = BaseImage.__new__(BaseImage)
-        result.data = np.ndarray(shape, dtype='uint8')
+        result.data = np.ndarray(shape, dtype=int)
         result.color_model = ColorModel.rgb
         rgb = result.data.view().reshape(shape_l)
         match self.color_model:
@@ -384,6 +384,14 @@ class ImageFiltration:
         return result
 
 
-class Image(GreyScaleTransform, ImageComparison, ImageAligning, ImageFiltration):
+class Thresholding(BaseImage):
+    def threshold(self, value: int) -> BaseImage:
+        result = self.to_gray()
+        for x in np.nditer(result.data[:, :], op_flags=['readwrite']):
+            x[...] = 255 if x >= value else 0
+        return result
+
+
+class Image(GreyScaleTransform, ImageComparison, ImageAligning, ImageFiltration, Thresholding):
     def __init__(self, path: str) -> None:
         super().__init__(path)
