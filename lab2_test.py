@@ -1,4 +1,4 @@
-from lab2 import BaseImage
+from lab5 import BaseImage
 
 
 lena = BaseImage('lena.jpg')
