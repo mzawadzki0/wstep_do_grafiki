@@ -1,5 +1,5 @@
-from lab3 import Image
-from lab4 import ImageDiffMethod as Dm
+from lab5 import Image
+from lab5 import ImageDiffMethod as Dm
 
 
 # test histogram & plot
