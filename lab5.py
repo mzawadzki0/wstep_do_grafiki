@@ -7,12 +7,17 @@ from math import acos, sqrt, degrees, cos
 
 # zwraca wartość 0-255, jeśli wychodzi ona spoza zakresu
 def cap(value):
-    if value < 0:
-        return 0
-    elif value > 255:
-        return 255
-    else:
+    if type(value) is np.ndarray:
+        value[value < 0] = 0
+        value[value > 255] = 255
         return value
+    else:
+        if value < 0:
+            return 0
+        elif value > 255:
+            return 255
+        else:
+            return value
 
 class ColorModel(Enum):
     rgb = 0
@@ -230,27 +235,21 @@ class GreyScaleTransform(BaseImage):
         result.color_model = ColorModel.gray
         view = result.data.view().reshape(shape_l[0], 1)
         if high_contrast:
-            for i, ((r, g, b), pixel) in enumerate(zip(self.to_rgb().data.reshape(shape_l), view)):
-                pixel[...] = 0.299 * r + 0.587 * g + 0.114 * b
+            result.data = self.data[:, :, 0] * 0.299 + self.data[:, :, 1] * 0.587 + self.data[:, :, 2] * 0.114
         else:
-            for i, ((r, g, b), pixel) in enumerate(zip(self.to_rgb().data.reshape(shape_l), view)):
-                pixel[...] = (r + g + b) / 3
+            result.data = self.data[:, :, 0]/3 + self.data[:, :, 1]/3 + self.data[:, :, 2]/3
         return result
 
     def to_sepia(self, w: int = None, alpha_beta: tuple = (None, None)) -> BaseImage:
         result = self.to_gray().to_rgb()
         if w is not None:
             if 20 <= w <= 40:
-                for l0 in np.nditer(result.data[:, :, 0], op_flags=['readwrite']):
-                    l0[...] = cap(l0 + w * 2)
-                for l1 in np.nditer(result.data[:, :, 1], op_flags=['readwrite']):
-                    l1[...] = cap(l1 + w)
+                result.data[:, :, 0] = cap(result.data[:, :, 0] + w * 2)
+                result.data[:, :, 1] = cap(result.data[:, :, 1] + w)
         else:
             if alpha_beta[0] > 1 and alpha_beta[1] < 1:
-                for l0 in np.nditer(result.data[:, :, 0], op_flags=['readwrite']):
-                    l0[...] = cap(l0 * alpha_beta[0])
-                for l2 in np.nditer(result.data[:, :, 2], op_flags=['readwrite']):
-                    l2[...] = cap(l2 * alpha_beta[1])
+                result.data[:, :, 0] = cap(result.data[:, :, 0] * alpha_beta[0])
+                result.data[:, :, 2] = cap(result.data[:, :, 2] * alpha_beta[1])
         return result
 
 
@@ -356,15 +355,13 @@ class ImageAligning(BaseImage):
 class ImageFiltration:
     @staticmethod
     def conv_2d(image: BaseImage, kernel: np.ndarray, prefix: float = 1) -> BaseImage:
-        # kernel_x // 2 do offsetu
-        kernel_x = kernel.shape[0]
-        kernel_y = kernel.shape[1]
+        kernel_x, kernel_y = kernel.shape[0], kernel.shape[1]
         kernel = kernel * prefix
         result = BaseImage.__new__(BaseImage)
         result.data = np.ndarray(image.data.shape, float) # dtype='uint8' ???
         result.color_model = image.color_model
         if image.color_model is ColorModel.gray:
-            # aby przefiltrować również piksele graniczne, obraz źródłowy jest powiększany z każdej strony o offset
+            # obraz wynikowy ma ten sam rozmiar co źródłowy
             temp = np.pad(image.data, (kernel_x // 2, kernel_y // 2))
             for i in range(result.data.shape[0]):
                 for j in range(result.data.shape[1]):
@@ -386,9 +383,12 @@ class ImageFiltration:
 
 class Thresholding(BaseImage):
     def threshold(self, value: int) -> BaseImage:
-        result = self.to_gray()
-        for x in np.nditer(result.data[:, :], op_flags=['readwrite']):
-            x[...] = 255 if x >= value else 0
+        if self.color_model != ColorModel.gray:
+            result = self.to_gray()
+        else:
+            result = self
+        result.data[result.data < value] = 0
+        result.data[result.data >= value] = 255
         return result
 
 
