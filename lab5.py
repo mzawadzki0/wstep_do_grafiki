@@ -351,6 +351,14 @@ class ImageAligning(BaseImage):
             result.data = (self.data.astype(float) - m) * 255 / (mm - m)
         return result
 
+    def clahe(self):
+        if self.color_model is not ColorModel.gray:
+            print('Only grayscale images are aligned!')
+            return ...
+        result = BaseImage.__new__(BaseImage)
+        result.data = np.ndarray(self.data.shape, dtype='uint8')
+        result.color_model = ColorModel.gray
+
 
 class ImageFiltration:
     @staticmethod
@@ -390,6 +398,9 @@ class Thresholding(BaseImage):
         result.data[result.data < value] = 0
         result.data[result.data >= value] = 255
         return result
+
+    def otsu(self):
+        pass
 
 
 class Image(GreyScaleTransform, ImageComparison, ImageAligning, ImageFiltration, Thresholding):

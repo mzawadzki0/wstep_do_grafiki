@@ -1,13 +1,8 @@
-from lab2 import BaseImage
-import matplotlib.colors as colors
+import numpy as np
 
 
-lena = BaseImage('lena.jpg')
-hsv = lena.to_hsv()
+arr = [1,1,1,1,5,100]
 
-hsv.data[:, :, 0] /= 360
-view = hsv.data.view().reshape(512*512, 3)
-for i, val in enumerate(view):
-    view[i] = colors.hsv_to_rgb(val)
+print(arr)
 
-hsv.show_img()
+print(np.percentile(arr, 70, method='nearest'))
